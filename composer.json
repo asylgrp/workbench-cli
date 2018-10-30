@@ -27,9 +27,9 @@
         "byrokrat/amount": "^2.0",
         "byrokrat/accounting": "^1.0",
         "hanneskod/yaysondb": "^2.0",
-        "symfony/console": "^3.2",
+        "symfony/console": "^4",
         "symfony/dependency-injection": "^4",
-        "symfony/event-dispatcher": "^3.2",
+        "symfony/event-dispatcher": "^4",
         "aura/di": "^3.0"
     },
     "require-dev": {

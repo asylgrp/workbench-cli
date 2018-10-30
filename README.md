@@ -27,7 +27,6 @@ behaviour by
 * Command namespace rename => Console
 * Symfony DI istället för aura...
 * Mer inspiration från giroapp setup??
-* Bumb symfony dependencies till 4.0
 
 ### autoblock
 
