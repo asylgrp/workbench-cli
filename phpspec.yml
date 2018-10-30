@@ -1,0 +1,6 @@
+suites:
+    autogiro_suite:
+        namespace: asylgrp\workbench
+        psr4_prefix: asylgrp\workbench
+
+formatter.name: dot

@@ -1,0 +1,34 @@
+{
+    "name": "asylgrp/workbench-cli",
+    "description": "CLI frontend for administration of a workbench server",
+    "homepage": "https://github.com/asylgrp/workbench-cli",
+    "type": "project",
+    "license": "GPL-3.0-or-later",
+    "authors": [
+        {
+            "name": "Hannes Forsgård",
+            "email": "hannes.forsgard@fripost.org"
+        }
+    ],
+    "bin": [
+        "bin/workbench"
+    ],
+    "autoload": {
+        "psr-4": {
+            "asylgrp\\workbench\\": "src/"
+        },
+        "files": [
+            "src/accounting_macros.php"
+        ]
+    },
+    "require": {
+        "php": "^7.1",
+        "ext-bcmath": "*",
+        "byrokrat/amount": "^2.0",
+        "byrokrat/accounting": "^1.0",
+        "hanneskod/yaysondb": "^2.0",
+        "symfony/console": "^3.2",
+        "symfony/event-dispatcher": "^3.2",
+        "aura/di": "^3.0"
+    }
+}

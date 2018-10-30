@@ -1,0 +1,10 @@
+default:
+    suites:
+        default:
+            contexts:
+                - FeatureContext:
+                    executable: bin/workbench
+        phar:
+            contexts:
+                - FeatureContext:
+                    executable: workbench.phar
