@@ -1,0 +1,11 @@
+parameters:
+    app.name: 'workbench'
+    app.version: '$app_version$'
+    env(WORKBENCH_PATH): 'workbench'
+    env(WORKBENCH_INI): '%env(WORKBENCH_PATH)%/workbench.ini'
+    app.ini_file_name: '%env(WORKBENCH_INI)%'
+
+services:
+    _defaults:
+        public: false
+        autowire: true
