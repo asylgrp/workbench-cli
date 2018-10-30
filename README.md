@@ -24,7 +24,6 @@ behaviour by
 ### Transition 30/10-18
 
 * Inject all in ImportSieAction, se TODO
-* Command namespace rename => Console
 * Symfony DI istället för aura...
 * Mer inspiration från giroapp setup??
 

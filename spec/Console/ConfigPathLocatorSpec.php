@@ -2,9 +2,9 @@
 
 declare(strict_types = 1);
 
-namespace spec\asylgrp\workbench\Command;
+namespace spec\asylgrp\workbench\Console;
 
-use asylgrp\workbench\Command\ConfigPathLocator;
+use asylgrp\workbench\Console\ConfigPathLocator;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 

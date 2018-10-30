@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace asylgrp\workbench\Command;
+namespace asylgrp\workbench\Console;
 
 use asylgrp\workbench\Event\ImportEvent;
 use Symfony\Component\Console\Input\InputArgument;
