@@ -7,25 +7,16 @@ CLI frontend for administration of a workbench server.
 
 ## Installation
 
-1. Clone this repository
-1. Install dependencies using `composer install`
-1. Initialize the database using `bin/workbench init`
+1. Build using `bob`
+1. Initialize the database using `./workbench.phar init`
 
-## Specifying working directory
+### Specifying working directory
 
-Workbench will by default create files in `~/.workbench/`. You may override this
-behaviour by
-
-1. Setting the `--config` option
-1. Defining the environment variable `WORKBENCH_PATH`
+Workbench will by default create files in a directory called `workbench` in the
+current working directory. You may override this behaviour by defining the
+environment variable `WORKBENCH_PATH`.
 
 ## TODO ##
-
-### Transition 30/10-18
-
-* Inject all in ImportSieAction, se TODO
-* Symfony DI istället för aura...
-* Mer inspiration från giroapp setup??
 
 ### autoblock
 

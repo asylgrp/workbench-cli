@@ -8,10 +8,7 @@ use asylgrp\workbench\Event\LogEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-/**
- * Write log events to output
- */
-class LogSubscriber implements EventSubscriberInterface
+final class LogSubscriber implements EventSubscriberInterface
 {
     /**
      * @var OutputInterface

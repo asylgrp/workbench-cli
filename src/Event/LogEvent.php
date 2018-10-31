@@ -22,21 +22,15 @@ class LogEvent extends Event
     const INFO = 'log.info';
 
     /**
-     * @var string The log message
+     * @var string
      */
     private $message;
 
-    /**
-     * Set log message
-     */
     public function __construct(string $message)
     {
         $this->message = $message;
     }
 
-    /**
-     * Get log message
-     */
     public function getMessage(): string
     {
         return $this->message;

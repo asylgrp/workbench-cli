@@ -4,41 +4,50 @@ declare(strict_types = 1);
 
 namespace asylgrp\workbench\AccountRenderer;
 
+use asylgrp\workbench\DependencyInjection\TableBuilderProperty;
 use asylgrp\workbench\TableBuilder;
-use asylgrp\workbench\TableBuilderTrait;
 use byrokrat\accounting\Dimension\AccountInterface;
 use Symfony\Component\Console\Helper\TableCell;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Render accounts as a simplified ledger tables
  */
-class MailRenderer extends AbstractAccountRenderer
+final class MailRenderer implements AccountRendererInterface
 {
-    use TableBuilderTrait;
+    use TableBuilderProperty;
 
-    public function renderAccount(AccountInterface $account)
+    /**
+     * @var OutputInterface
+     */
+    private $output;
+
+    public function initialize(string $header, OutputInterface $output): void
     {
-        $tableBuilder = $this->getTableBuilder();
+        $this->output = $output;
+    }
 
-        $tableBuilder->reset();
-        $tableBuilder->addHeader($account->getDescription());
-        $tableBuilder->addColumn('Datum', 10);
-        $tableBuilder->addColumn('Beskrivning', 30);
-        $tableBuilder->addColumn('Summa', 9, TableBuilder::ALIGN_RIGHT);
-        $tableBuilder->addColumn('Saldo', 10, TableBuilder::ALIGN_RIGHT);
+    public function renderAccount(AccountInterface $account): void
+    {
+        $this->tableBuilder->reset();
+        $this->tableBuilder->addHeader($account->getDescription());
+        $this->tableBuilder->addColumn('Datum', 10);
+        $this->tableBuilder->addColumn('Beskrivning', 30);
+        $this->tableBuilder->addColumn('Summa', 9, TableBuilder::ALIGN_RIGHT);
+        $this->tableBuilder->addColumn('Saldo', 10, TableBuilder::ALIGN_RIGHT);
 
         $currentBalance = $account->getAttribute('summary')->getIncomingBalance();
 
-        $tableBuilder->addRow([
+        $this->tableBuilder->addRow([
             new TableCell("Ingående saldo", ['colspan' => '2']),
             '',
             $currentBalance
         ]);
 
-        $tableBuilder->addSeparator();
+        $this->tableBuilder->addSeparator();
 
         foreach ($account->getAttribute('transactions') as $trans) {
-            $tableBuilder->addRow([
+            $this->tableBuilder->addRow([
                 $trans->getDate()->format('Y-m-d'),
                 mb_substr($trans->getDescription(), 0, 30),
                 $trans->getAmount(),
@@ -46,14 +55,18 @@ class MailRenderer extends AbstractAccountRenderer
             ]);
         }
 
-        $tableBuilder->addSeparator();
+        $this->tableBuilder->addSeparator();
 
-        $tableBuilder->addRow([
+        $this->tableBuilder->addRow([
             new TableCell("Utgående saldo", ['colspan' => '2']),
             '',
             $account->getAttribute('summary')->getOutgoingBalance()
         ]);
 
-        $tableBuilder->buildTable($this->getOutput())->render();
+        $this->tableBuilder->buildTable($this->output)->render();
+    }
+
+    public function finalize(): void
+    {
     }
 }

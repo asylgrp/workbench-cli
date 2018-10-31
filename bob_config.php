@@ -42,7 +42,7 @@ task('phpstan', function() {
 
 desc('Run php code sniffer');
 task('sniff', function() {
-    shell('phpcs src --standard=PSR2 --ignore=src/ProjectServiceContainer.php');
+    shell('phpcs src --standard=PSR2 --ignore=src/DependencyInjection/ProjectServiceContainer.php');
     println('Syntax checker on src/ passed');
     shell('phpcs spec --standard=spec/ruleset.xml');
     println('Syntax checker on spec/ passed');
@@ -70,14 +70,12 @@ task('container', ['load_dependencies'], function () {
     build_container();
 });
 
-define('CONTAINER_PATH', 'src/ProjectServiceContainer.php');
+define('CONTAINER_PATH', 'src/DependencyInjection/ProjectServiceContainer.php');
 
 task('update_container', ['load_dependencies', CONTAINER_PATH]);
 
 fileTask(CONTAINER_PATH, fileList('*.yaml')->in([__DIR__ . '/etc']), function () {
-    // TODO
-    println('AUTOBUILD CONTAINER COMMENTED OUT...');
-    // build_container();
+    build_container();
 });
 
 function build_container()
@@ -87,7 +85,7 @@ function build_container()
     $dic->addCompilerPass(new RegisterListenersPass(Dispatcher::CLASS, 'event_listener', 'event_subscriber'));
     $dic->compile();
     file_put_contents(CONTAINER_PATH, (new PhpDumper($dic))->dump([
-        'namespace' => 'asylgrp\workbench',
+        'namespace' => 'asylgrp\workbench\DependencyInjection',
         'class' => 'ProjectServiceContainer'
     ]));
     println('Generated dependency injection container');

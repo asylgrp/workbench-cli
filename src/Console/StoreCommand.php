@@ -4,54 +4,56 @@ declare(strict_types = 1);
 
 namespace asylgrp\workbench\Console;
 
-use asylgrp\workbench\Event\RemoveItemEvent;
-use asylgrp\workbench\TableBuilder;
+use asylgrp\workbench\CommandBus\DeleteDataCommand;
+use asylgrp\workbench\DependencyInjection\StorageProperty;
+use asylgrp\workbench\DependencyInjection\TableBuilderProperty;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class StoreCommand extends AbstractBaseCommand
+final class StoreCommand extends AbstractCommand
 {
+    use StorageProperty, TableBuilderProperty;
+
     protected function configure()
     {
-        parent::configure();
-        $this->setName('store');
-        $this->setDescription('Inspect internal storage');
-        $this->setHelp('Allows you to inspect and manage stored content');
-        $this->addOption('clear', null, InputOption::VALUE_NONE, 'Clear all items from storage');
-        $this->addOption('rm', null, InputOption::VALUE_REQUIRED, 'Remove item from storage');
+        $this
+            ->setName('store')
+            ->setDescription('Inspect internal storage')
+            ->setHelp('Allows you to inspect and manage stored content')
+            ->addOption('clear', null, InputOption::VALUE_NONE, 'Clear all items from storage')
+            ->addOption('rm', null, InputOption::VALUE_REQUIRED, 'Remove item from storage')
+        ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $storage = $this->getContainer()->get('storage_manager');
-
         if ($key = $input->getOption('rm')) {
-            $this->dispatch(RemoveItemEvent::NAME, new RemoveItemEvent($key));
+            $this->commandBus->handle(new DeleteDataCommand($key));
         }
 
         if ($input->getOption('clear')) {
-            foreach ($storage->getKeys() as $key) {
-                $this->dispatch(RemoveItemEvent::NAME, new RemoveItemEvent($key));
+            foreach ($this->storage->getKeys() as $key) {
+                $this->commandBus->handle(new DeleteDataCommand($key));
             }
         }
 
-        $keys = $storage->getKeys();
+        $keys = $this->storage->getKeys();
         sort($keys);
 
-        $tableBuilder = new tableBuilder;
-        $tableBuilder->addHeader('Items in storage <comment>(' . count($keys) . ')</comment>');
-        $tableBuilder->addColumn('Key');
-        $tableBuilder->addColumn('Value');
+        $this->tableBuilder->reset();
+        $this->tableBuilder->addHeader('Items in storage <comment>(' . count($keys) . ')</comment>');
+        $this->tableBuilder->addColumn('Key');
+        $this->tableBuilder->addColumn('Value');
 
         foreach ($keys as $key) {
-            $tableBuilder->addRow([
+            $this->tableBuilder->addRow([
                 $key,
-                self::stringify($storage->read($key))
+                self::stringify($this->storage->read($key))
             ]);
         }
 
-        $tableBuilder->buildTable($output)->render();
+        $this->tableBuilder->buildTable($output)->render();
     }
 
     private static function stringify($value): string

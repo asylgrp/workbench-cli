@@ -4,8 +4,8 @@ declare(strict_types = 1);
 
 namespace asylgrp\workbench\AccountRenderer;
 
+use asylgrp\workbench\DependencyInjection\TableBuilderProperty;
 use asylgrp\workbench\TableBuilder;
-use asylgrp\workbench\TableBuilderTrait;
 use byrokrat\accounting\Dimension\AccountInterface;
 use Symfony\Component\Console\Helper\TableCell;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -13,20 +13,24 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * Render accounts as ledger tables
  */
-final class LedgerRenderer extends AbstractAccountRenderer
+final class LedgerRenderer implements AccountRendererInterface
 {
-    use TableBuilderTrait;
+    use TableBuilderProperty;
 
-    public function initialize(string $header, OutputInterface $output)
+    /**
+     * @var OutputInterface
+     */
+    private $output;
+
+    public function initialize(string $header, OutputInterface $output): void
     {
-        parent::initialize($header, $output);
-        $tableBuilder = $this->getTableBuilder();
-        $tableBuilder->reset();
-        $tableBuilder->addColumn($header, 87);
-        $tableBuilder->buildTable($output)->render();
+        $this->output = $output;
+        $this->tableBuilder->reset();
+        $this->tableBuilder->addColumn($header, 87);
+        $this->tableBuilder->buildTable($output)->render();
     }
 
-    public function renderAccount(AccountInterface $account)
+    public function renderAccount(AccountInterface $account): void
     {
         if (!$account->hasAttribute('summary')) {
             throw new \LogicException('Unable to render unprocessed account');
@@ -34,30 +38,28 @@ final class LedgerRenderer extends AbstractAccountRenderer
 
         $accountSummary = $account->getAttribute('summary');
 
-        $tableBuilder = $this->getTableBuilder();
-
-        $tableBuilder->reset();
-        $tableBuilder->addHeader(strtoupper("{$account->getId()} {$account->getDescription()}"));
-        $tableBuilder->addColumn('Ver', 4);
-        $tableBuilder->addColumn('Datum', 10);
-        $tableBuilder->addColumn('Beskrivning', 30);
-        $tableBuilder->addColumn('Debet', 9, TableBuilder::ALIGN_RIGHT);
-        $tableBuilder->addColumn('Kredit', 9, TableBuilder::ALIGN_RIGHT);
-        $tableBuilder->addColumn('Saldo', 10, TableBuilder::ALIGN_RIGHT);
+        $this->tableBuilder->reset();
+        $this->tableBuilder->addHeader(strtoupper("{$account->getId()} {$account->getDescription()}"));
+        $this->tableBuilder->addColumn('Ver', 4);
+        $this->tableBuilder->addColumn('Datum', 10);
+        $this->tableBuilder->addColumn('Beskrivning', 30);
+        $this->tableBuilder->addColumn('Debet', 9, TableBuilder::ALIGN_RIGHT);
+        $this->tableBuilder->addColumn('Kredit', 9, TableBuilder::ALIGN_RIGHT);
+        $this->tableBuilder->addColumn('Saldo', 10, TableBuilder::ALIGN_RIGHT);
 
         $currentBalance = $accountSummary->getIncomingBalance();
 
-        $tableBuilder->addRow([
+        $this->tableBuilder->addRow([
             new TableCell("Ingående balans", ['colspan' => '3']),
             '',
             '',
             $currentBalance
         ]);
 
-        $tableBuilder->addSeparator();
+        $this->tableBuilder->addSeparator();
 
         foreach ($account->getAttribute('transactions') ?: [] as $trans) {
-            $tableBuilder->addRow([
+            $this->tableBuilder->addRow([
                 $trans->getAttribute('ver_num'),
                 $trans->getTransactionDate()->format('Y-m-d'),
                 mb_substr($trans->getDescription(), 0, 30),
@@ -67,24 +69,28 @@ final class LedgerRenderer extends AbstractAccountRenderer
             ]);
         }
 
-        $tableBuilder->addSeparator();
+        $this->tableBuilder->addSeparator();
 
-        $tableBuilder->addRow([
+        $this->tableBuilder->addRow([
             new TableCell("Omslutning", ['colspan' => '3']),
             $accountSummary->getDebit()->getAbsolute(),
             $accountSummary->getCredit()->getAbsolute(),
             ''
         ]);
 
-        $tableBuilder->addSeparator();
+        $this->tableBuilder->addSeparator();
 
-        $tableBuilder->addRow([
+        $this->tableBuilder->addRow([
             new TableCell("Utgående balans", ['colspan' => '3']),
             '',
             '',
             $accountSummary->getOutgoingBalance()
         ]);
 
-        $tableBuilder->buildTable($this->getOutput())->render();
+        $this->tableBuilder->buildTable($this->output)->render();
+    }
+
+    public function finalize(): void
+    {
     }
 }

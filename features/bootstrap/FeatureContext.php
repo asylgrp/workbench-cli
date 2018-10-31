@@ -48,13 +48,8 @@ final class FeatureContext implements Context
     {
         $this->cwd = sys_get_temp_dir() . '/workbench_cli_tests_' . time();
         mkdir($this->cwd);
-        mkdir($this->cwd . '/.workbench');
-
-        $this->app = new ApplicationWrapper(
-            $this->executable,
-            $this->flags . " --config='.workbench'",
-            $this->cwd
-        );
+        putenv("GIROAPP_PATH=workbench");
+        $this->app = new ApplicationWrapper($this->executable, $this->flags, $this->cwd);
     }
 
     /**
@@ -67,7 +62,7 @@ final class FeatureContext implements Context
         }
 
         if (is_dir($this->cwd)) {
-            exec("rm -rf {$this->cwd}", $output, $return);
+            exec("rm -rf {$this->cwd}");
         }
     }
 

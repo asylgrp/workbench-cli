@@ -30,7 +30,7 @@
         "symfony/console": "^4",
         "symfony/dependency-injection": "^4",
         "symfony/event-dispatcher": "^4",
-        "aura/di": "^3.0"
+        "league/tactician": "^1"
     },
     "require-dev": {
         "symfony/config": "^4",

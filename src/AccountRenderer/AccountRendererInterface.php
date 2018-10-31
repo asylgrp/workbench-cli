@@ -9,9 +9,9 @@ use byrokrat\accounting\Dimension\AccountInterface;
 
 interface AccountRendererInterface
 {
-    public function initialize(string $header, OutputInterface $output);
+    public function initialize(string $header, OutputInterface $output): void;
 
-    public function renderAccount(AccountInterface $account);
+    public function renderAccount(AccountInterface $account): void;
 
-    public function finalize();
+    public function finalize(): void;
 }

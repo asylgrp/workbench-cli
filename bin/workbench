@@ -1,21 +1,22 @@
 #!/usr/bin/env php
 <?php
 
+declare(strict_types = 1);
+
 namespace asylgrp\workbench\Console;
 
 require __DIR__.'/../vendor/autoload.php';
 
+use asylgrp\workbench\DependencyInjection\ProjectServiceContainer;
 use Symfony\Component\Console\Application;
 
-$app = new Application('workbench', '$app_version$');
+$container = new ProjectServiceContainer;
 
-$app->addCommands([
-    new BanCommand,
-    new BookCommand,
-    new ImportCommand,
-    new InitCommand,
-    new StoreCommand,
-    new SyncCommand,
-]);
+$app = new Application('workbench', '@app_version@');
+
+$app->add($container->get(BookCommand::CLASS));
+$app->add($container->get(ImportCommand::CLASS));
+$app->add($container->get(InitCommand::CLASS));
+$app->add($container->get(StoreCommand::CLASS));
 
 return $app->run();

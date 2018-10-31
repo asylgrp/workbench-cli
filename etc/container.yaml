@@ -1,11 +1,67 @@
 parameters:
-    app.name: 'workbench'
-    app.version: '$app_version$'
     env(WORKBENCH_PATH): 'workbench'
-    env(WORKBENCH_INI): '%env(WORKBENCH_PATH)%/workbench.ini'
-    app.ini_file_name: '%env(WORKBENCH_INI)%'
+    storage.path: '%env(WORKBENCH_PATH)%/storage'
 
 services:
     _defaults:
         public: false
         autowire: true
+
+    asylgrp\workbench\AccountRenderer\:
+        resource: '../src/AccountRenderer/*'
+
+    asylgrp\workbench\AccountRenderer\AccountRendererContainer:
+        class: ~
+        arguments:
+            -
+                ledger: '@asylgrp\workbench\AccountRenderer\LedgerRenderer'
+                list: '@asylgrp\workbench\AccountRenderer\ListRenderer'
+                mail: '@asylgrp\workbench\AccountRenderer\MailRenderer'
+
+    asylgrp\workbench\Console\:
+        resource: '../src/Console/*'
+        public: true
+
+    asylgrp\workbench\CommandBus\:
+        resource: '../src/CommandBus/*'
+
+    League\Tactician\CommandBus:
+        public: true
+        class: ~
+        factory: 'League\Tactician\Setup\QuickStart:create'
+        arguments:
+            -
+                asylgrp\workbench\CommandBus\ImportSie4Command: '@asylgrp\workbench\CommandBus\ImportSie4Handler'
+                asylgrp\workbench\CommandBus\PersistDataCommand: '@asylgrp\workbench\CommandBus\PersistDataHandler'
+                asylgrp\workbench\CommandBus\DeleteDataCommand: '@asylgrp\workbench\CommandBus\DeleteDataHandler'
+
+    League\Tactician\Setup\QuickStart:
+        class: ~
+
+    byrokrat\accounting\Processor\ProcessorInterface:
+        class: byrokrat\accounting\Processor\TransactionProcessor
+
+    byrokrat\accounting\Sie4\Parser\Sie4Parser:
+        class: ~
+        factory: 'byrokrat\accounting\Sie4\Parser\Sie4ParserFactory:createParser'
+
+    byrokrat\accounting\Sie4\Parser\Sie4ParserFactory:
+        class: ~
+
+    Symfony\Component\EventDispatcher\EventDispatcherInterface:
+        class: 'Symfony\Component\EventDispatcher\EventDispatcher'
+
+    asylgrp\workbench\Storage\StorageInterface:
+        class: 'asylgrp\workbench\Storage\FlysystemStorage'
+        arguments: ['@flysystem']
+
+    flysystem:
+        class: League\Flysystem\Filesystem
+        arguments: ['@flysystem_adapter']
+
+    flysystem_adapter:
+        class: League\Flysystem\Adapter\Local
+        arguments: ['%storage.path%']
+
+    asylgrp\workbench\TableBuilder:
+        class: ~
