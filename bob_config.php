@@ -34,10 +34,8 @@ task('behat-phar', ['workbench.phar'], function() {
 
 desc('Run statical analysis using phpstan feature tests');
 task('phpstan', function() {
-    // TODO
-    println('PHPSTAN TESTS COMMENTED OUT...');
-    #shell('phpstan analyze src -l 7');
-    #println('Phpstan analysis passed');
+    shell('phpstan analyze src -l 7');
+    println('Phpstan analysis passed');
 });
 
 desc('Run php code sniffer');

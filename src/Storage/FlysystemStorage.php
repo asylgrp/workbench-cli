@@ -23,13 +23,19 @@ final class FlysystemStorage implements StorageInterface
         return $this->filesystem->has($key);
     }
 
-    public function read(string  $key)
+    public function read(string $key)
     {
         if (!$this->has($key)) {
             return null;
         }
 
-        return unserialize($this->filesystem->read($key));
+        $serialized = $this->filesystem->read($key);
+
+        if (!$serialized) {
+            return null;
+        }
+
+        return unserialize($serialized);
     }
 
     public function write(string $key, $object): bool
@@ -37,7 +43,7 @@ final class FlysystemStorage implements StorageInterface
         return $this->filesystem->put($key, serialize($object));
     }
 
-    public function delete(string  $key): bool
+    public function delete(string $key): bool
     {
         if (!$this->has($key)) {
             return false;

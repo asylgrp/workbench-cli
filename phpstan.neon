@@ -1,3 +1,6 @@
 parameters:
 	excludes_analyse:
 		- src/accounting_macros.php
+		- src/DependencyInjection/ProjectServiceContainer.php
+	ignoreErrors:
+		- '#Call to an undefined method byrokrat\\accounting\\Query::whereContactPerson\(\).#'

@@ -29,6 +29,6 @@ final class ImportCommand extends AbstractCommand
             throw new \RuntimeException("Unable to read file $fname");
         }
 
-        $this->commandBus->handle(new ImportSie4Command($fname, file_get_contents($fname)));
+        $this->commandBus->handle(new ImportSie4Command($fname, (string)file_get_contents($fname)));
     }
 }

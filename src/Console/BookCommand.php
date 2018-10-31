@@ -68,7 +68,7 @@ final class BookCommand extends AccountingAwareCommand
 
         $renderer = $this->accountRendererContainer->getAccountRenderer($input->getOption('format'));
 
-        $renderer->initialize("WORKBENCH $input @ " . date('Y-m-d'), $output);
+        $renderer->initialize('WORKBENCH @ ' . date('Y-m-d'), $output);
 
         $accounts->orderById()->each([$renderer, 'renderAccount']);
 
