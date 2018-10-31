@@ -23,7 +23,7 @@ final class ImportCommand extends AbstractCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $fname = $input->getArgument('filename');
+        $fname = (string)$input->getArgument('filename');
 
         if (!is_readable($fname) || !is_file($fname)) {
             throw new \RuntimeException("Unable to read file $fname");
