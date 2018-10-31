@@ -31,9 +31,9 @@ services:
         factory: 'League\Tactician\Setup\QuickStart:create'
         arguments:
             -
-                asylgrp\workbench\CommandBus\ImportSie4Command: '@asylgrp\workbench\CommandBus\ImportSie4Handler'
                 asylgrp\workbench\CommandBus\PersistDataCommand: '@asylgrp\workbench\CommandBus\PersistDataHandler'
                 asylgrp\workbench\CommandBus\DeleteDataCommand: '@asylgrp\workbench\CommandBus\DeleteDataHandler'
+                asylgrp\workbench\CommandBus\ImportSie4Command: '@asylgrp\workbench\CommandBus\ImportSie4Handler'
 
     League\Tactician\Setup\QuickStart:
         class: ~

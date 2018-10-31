@@ -92,24 +92,23 @@ class ProjectServiceContainer extends Container
      */
     protected function getCommandBusService()
     {
-        $a = new \asylgrp\workbench\CommandBus\ImportSie4Handler((new \byrokrat\accounting\Sie4\Parser\Sie4ParserFactory())->createParser(), new \byrokrat\accounting\Processor\TransactionProcessor());
+        $a = new \asylgrp\workbench\CommandBus\PersistDataHandler();
+        $b = ($this->privates['Symfony\Component\EventDispatcher\EventDispatcherInterface'] ?? $this->privates['Symfony\Component\EventDispatcher\EventDispatcherInterface'] = new \Symfony\Component\EventDispatcher\EventDispatcher());
+        $c = ($this->privates['asylgrp\workbench\Storage\StorageInterface'] ?? $this->getStorageInterfaceService());
 
-        $b = ($this->privates['asylgrp\workbench\Storage\StorageInterface'] ?? $this->getStorageInterfaceService());
+        $a->setEventDispatcher($b);
+        $a->setStorage($c);
 
-        $c = new \asylgrp\workbench\CommandBus\PersistDataHandler();
-        $d = ($this->privates['Symfony\Component\EventDispatcher\EventDispatcherInterface'] ?? $this->privates['Symfony\Component\EventDispatcher\EventDispatcherInterface'] = new \Symfony\Component\EventDispatcher\EventDispatcher());
+        $d = new \asylgrp\workbench\CommandBus\DeleteDataHandler();
+        $d->setEventDispatcher($b);
+        $d->setStorage($c);
 
-        $c->setEventDispatcher($d);
-        $c->setStorage($b);
+        $e = new \asylgrp\workbench\CommandBus\ImportSie4Handler((new \byrokrat\accounting\Sie4\Parser\Sie4ParserFactory())->createParser(), new \byrokrat\accounting\Processor\TransactionProcessor());
 
-        $e = new \asylgrp\workbench\CommandBus\DeleteDataHandler();
-        $e->setEventDispatcher($d);
-        $e->setStorage($b);
+        $this->services['League\Tactician\CommandBus'] = $instance = (new \League\Tactician\Setup\QuickStart())->create(array('asylgrp\\workbench\\CommandBus\\PersistDataCommand' => $a, 'asylgrp\\workbench\\CommandBus\\DeleteDataCommand' => $d, 'asylgrp\\workbench\\CommandBus\\ImportSie4Command' => $e));
 
-        $this->services['League\Tactician\CommandBus'] = $instance = (new \League\Tactician\Setup\QuickStart())->create(array('asylgrp\\workbench\\CommandBus\\ImportSie4Command' => $a, 'asylgrp\\workbench\\CommandBus\\PersistDataCommand' => $c, 'asylgrp\\workbench\\CommandBus\\DeleteDataCommand' => $e));
-
-        $a->setCommandBus($instance);
-        $a->setStorage($b);
+        $e->setCommandBus($instance);
+        $e->setStorage($c);
 
         return $instance;
     }
