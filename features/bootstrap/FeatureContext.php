@@ -48,7 +48,7 @@ final class FeatureContext implements Context
     {
         $this->cwd = sys_get_temp_dir() . '/workbench_cli_tests_' . time();
         mkdir($this->cwd);
-        putenv("GIROAPP_PATH=workbench");
+        putenv("WORKBENCH_PATH=workbench");
         $this->app = new ApplicationWrapper($this->executable, $this->flags, $this->cwd);
     }
 
