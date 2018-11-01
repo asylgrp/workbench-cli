@@ -24,6 +24,7 @@
     "require": {
         "php": "^7.1",
         "ext-bcmath": "*",
+        "asylgrp/economix": "^1.1",
         "byrokrat/amount": "^2.0",
         "byrokrat/accounting": "^1.0",
         "hanneskod/yaysondb": "^2.0",
@@ -36,5 +37,11 @@
         "symfony/config": "^4",
         "symfony/yaml": "^4",
         "symfony/expression-language": "^4"
-    }
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/asylgrp/economix"
+        }
+    ]
 }

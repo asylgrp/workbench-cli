@@ -60,7 +60,7 @@ final class LedgerRenderer implements AccountRendererInterface
 
         foreach ($account->getAttribute('transactions') ?: [] as $trans) {
             $this->tableBuilder->addRow([
-                $trans->getAttribute('ver_num'),
+                $trans->getVerificationId(),
                 $trans->getTransactionDate()->format('Y-m-d'),
                 mb_substr($trans->getDescription(), 0, 30),
                 $trans->getAmount()->isPositive() ? $trans->getAmount() : '',

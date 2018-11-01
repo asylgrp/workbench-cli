@@ -32,11 +32,7 @@ class ProjectServiceContainer extends Container
 
         $this->services = $this->privates = array();
         $this->methodMap = array(
-            'League\\Tactician\\CommandBus' => 'getCommandBusService',
-            'asylgrp\\workbench\\Console\\BookCommand' => 'getBookCommandService',
-            'asylgrp\\workbench\\Console\\ImportCommand' => 'getImportCommandService',
-            'asylgrp\\workbench\\Console\\InitCommand' => 'getInitCommandService',
-            'asylgrp\\workbench\\Console\\StoreCommand' => 'getStoreCommandService',
+            'Symfony\\Component\\Console\\Application' => 'getApplicationService',
         );
 
         $this->aliases = array();
@@ -61,10 +57,13 @@ class ProjectServiceContainer extends Container
     public function getRemovedIds()
     {
         return array(
+            'League\\Tactician\\CommandBus' => true,
             'League\\Tactician\\Setup\\QuickStart' => true,
             'Psr\\Container\\ContainerInterface' => true,
             'Symfony\\Component\\DependencyInjection\\ContainerInterface' => true,
             'Symfony\\Component\\EventDispatcher\\EventDispatcherInterface' => true,
+            'asylgrp\\matchmaker\\Filter\\FilterInterface' => true,
+            'asylgrp\\matchmaker\\MatchMaker' => true,
             'asylgrp\\workbench\\AccountRenderer\\AccountRendererContainer' => true,
             'asylgrp\\workbench\\AccountRenderer\\LedgerRenderer' => true,
             'asylgrp\\workbench\\AccountRenderer\\ListRenderer' => true,
@@ -75,18 +74,93 @@ class ProjectServiceContainer extends Container
             'asylgrp\\workbench\\CommandBus\\ImportSie4Handler' => true,
             'asylgrp\\workbench\\CommandBus\\PersistDataCommand' => true,
             'asylgrp\\workbench\\CommandBus\\PersistDataHandler' => true,
+            'asylgrp\\workbench\\Console\\AnalyzeCommand' => true,
+            'asylgrp\\workbench\\Console\\BookCommand' => true,
+            'asylgrp\\workbench\\Console\\ImportCommand' => true,
+            'asylgrp\\workbench\\Console\\InitCommand' => true,
+            'asylgrp\\workbench\\Console\\StoreCommand' => true,
+            'asylgrp\\workbench\\DependencyInjection\\ProjectServiceContainer' => true,
+            'asylgrp\\workbench\\Event\\LogEvent' => true,
+            'asylgrp\\workbench\\LogSubscriber' => true,
+            'asylgrp\\workbench\\Setup\\BanFilterFactory' => true,
+            'asylgrp\\workbench\\Setup\\MatchMakerFactory' => true,
+            'asylgrp\\workbench\\Storage\\FlysystemStorage' => true,
             'asylgrp\\workbench\\Storage\\StorageInterface' => true,
             'asylgrp\\workbench\\TableBuilder' => true,
+            'asylgrp\\workbench\\Utils\\SystemClock' => true,
             'byrokrat\\accounting\\Processor\\ProcessorInterface' => true,
             'byrokrat\\accounting\\Sie4\\Parser\\Sie4Parser' => true,
             'byrokrat\\accounting\\Sie4\\Parser\\Sie4ParserFactory' => true,
             'flysystem' => true,
             'flysystem_adapter' => true,
+            'now' => true,
         );
     }
 
     /**
-     * Gets the public 'League\Tactician\CommandBus' shared autowired service.
+     * Gets the public 'Symfony\Component\Console\Application' shared autowired service.
+     *
+     * @return \Symfony\Component\Console\Application
+     */
+    protected function getApplicationService()
+    {
+        $this->services['Symfony\Component\Console\Application'] = $instance = new \Symfony\Component\Console\Application('Workbench', '$app_version$');
+
+        $a = new \asylgrp\workbench\Console\AnalyzeCommand((new \asylgrp\workbench\Setup\MatchMakerFactory())->createMatchMaker(), (new \asylgrp\workbench\Setup\BanFilterFactory())->createBanFilter((new \asylgrp\workbench\Utils\SystemClock())->now()));
+
+        $b = ($this->privates['League\Tactician\CommandBus'] ?? $this->getCommandBusService());
+        $c = ($this->privates['Symfony\Component\EventDispatcher\EventDispatcherInterface'] ?? $this->privates['Symfony\Component\EventDispatcher\EventDispatcherInterface'] = new \Symfony\Component\EventDispatcher\EventDispatcher());
+        $d = ($this->privates['asylgrp\workbench\Storage\StorageInterface'] ?? $this->getStorageInterfaceService());
+
+        $a->setCommandBus($b);
+        $a->setEventDispatcher($c);
+        $a->setStorage($d);
+
+        $f = new \asylgrp\workbench\AccountRenderer\LedgerRenderer();
+        $g = new \asylgrp\workbench\TableBuilder();
+
+        $f->setTableBuilder($g);
+
+        $h = new \asylgrp\workbench\AccountRenderer\ListRenderer();
+        $h->setTableBuilder($g);
+
+        $i = new \asylgrp\workbench\AccountRenderer\MailRenderer();
+        $i->setTableBuilder($g);
+        $e = new \asylgrp\workbench\Console\BookCommand(new \asylgrp\workbench\AccountRenderer\AccountRendererContainer(array('ledger' => $f, 'list' => $h, 'mail' => $i)));
+
+        $e->setCommandBus($b);
+        $e->setEventDispatcher($c);
+        $e->setStorage($d);
+
+        $j = new \asylgrp\workbench\Console\ImportCommand();
+
+        $j->setCommandBus($b);
+        $j->setEventDispatcher($c);
+
+        $k = new \asylgrp\workbench\Console\InitCommand();
+
+        $k->setCommandBus($b);
+        $k->setEventDispatcher($c);
+        $k->setStorage($d);
+
+        $l = new \asylgrp\workbench\Console\StoreCommand();
+
+        $l->setCommandBus($b);
+        $l->setEventDispatcher($c);
+        $l->setStorage($d);
+        $l->setTableBuilder($g);
+
+        $instance->add($a);
+        $instance->add($e);
+        $instance->add($j);
+        $instance->add($k);
+        $instance->add($l);
+
+        return $instance;
+    }
+
+    /**
+     * Gets the private 'League\Tactician\CommandBus' shared autowired service.
      *
      * @return \League\Tactician\CommandBus
      */
@@ -105,85 +179,10 @@ class ProjectServiceContainer extends Container
 
         $e = new \asylgrp\workbench\CommandBus\ImportSie4Handler((new \byrokrat\accounting\Sie4\Parser\Sie4ParserFactory())->createParser(), new \byrokrat\accounting\Processor\TransactionProcessor());
 
-        $this->services['League\Tactician\CommandBus'] = $instance = (new \League\Tactician\Setup\QuickStart())->create(array('asylgrp\\workbench\\CommandBus\\PersistDataCommand' => $a, 'asylgrp\\workbench\\CommandBus\\DeleteDataCommand' => $d, 'asylgrp\\workbench\\CommandBus\\ImportSie4Command' => $e));
+        $this->privates['League\Tactician\CommandBus'] = $instance = (new \League\Tactician\Setup\QuickStart())->create(array('asylgrp\\workbench\\CommandBus\\PersistDataCommand' => $a, 'asylgrp\\workbench\\CommandBus\\DeleteDataCommand' => $d, 'asylgrp\\workbench\\CommandBus\\ImportSie4Command' => $e));
 
         $e->setCommandBus($instance);
         $e->setStorage($c);
-
-        return $instance;
-    }
-
-    /**
-     * Gets the public 'asylgrp\workbench\Console\BookCommand' shared autowired service.
-     *
-     * @return \asylgrp\workbench\Console\BookCommand
-     */
-    protected function getBookCommandService()
-    {
-        $a = new \asylgrp\workbench\AccountRenderer\LedgerRenderer();
-        $b = ($this->privates['asylgrp\workbench\TableBuilder'] ?? $this->privates['asylgrp\workbench\TableBuilder'] = new \asylgrp\workbench\TableBuilder());
-
-        $a->setTableBuilder($b);
-
-        $c = new \asylgrp\workbench\AccountRenderer\ListRenderer();
-        $c->setTableBuilder($b);
-
-        $d = new \asylgrp\workbench\AccountRenderer\MailRenderer();
-        $d->setTableBuilder($b);
-
-        $this->services['asylgrp\workbench\Console\BookCommand'] = $instance = new \asylgrp\workbench\Console\BookCommand(new \asylgrp\workbench\AccountRenderer\AccountRendererContainer(array('ledger' => $a, 'list' => $c, 'mail' => $d)));
-
-        $instance->setCommandBus(($this->services['League\Tactician\CommandBus'] ?? $this->getCommandBusService()));
-        $instance->setEventDispatcher(($this->privates['Symfony\Component\EventDispatcher\EventDispatcherInterface'] ?? $this->privates['Symfony\Component\EventDispatcher\EventDispatcherInterface'] = new \Symfony\Component\EventDispatcher\EventDispatcher()));
-        $instance->setStorage(($this->privates['asylgrp\workbench\Storage\StorageInterface'] ?? $this->getStorageInterfaceService()));
-
-        return $instance;
-    }
-
-    /**
-     * Gets the public 'asylgrp\workbench\Console\ImportCommand' shared autowired service.
-     *
-     * @return \asylgrp\workbench\Console\ImportCommand
-     */
-    protected function getImportCommandService()
-    {
-        $this->services['asylgrp\workbench\Console\ImportCommand'] = $instance = new \asylgrp\workbench\Console\ImportCommand();
-
-        $instance->setCommandBus(($this->services['League\Tactician\CommandBus'] ?? $this->getCommandBusService()));
-        $instance->setEventDispatcher(($this->privates['Symfony\Component\EventDispatcher\EventDispatcherInterface'] ?? $this->privates['Symfony\Component\EventDispatcher\EventDispatcherInterface'] = new \Symfony\Component\EventDispatcher\EventDispatcher()));
-
-        return $instance;
-    }
-
-    /**
-     * Gets the public 'asylgrp\workbench\Console\InitCommand' shared autowired service.
-     *
-     * @return \asylgrp\workbench\Console\InitCommand
-     */
-    protected function getInitCommandService()
-    {
-        $this->services['asylgrp\workbench\Console\InitCommand'] = $instance = new \asylgrp\workbench\Console\InitCommand();
-
-        $instance->setCommandBus(($this->services['League\Tactician\CommandBus'] ?? $this->getCommandBusService()));
-        $instance->setEventDispatcher(($this->privates['Symfony\Component\EventDispatcher\EventDispatcherInterface'] ?? $this->privates['Symfony\Component\EventDispatcher\EventDispatcherInterface'] = new \Symfony\Component\EventDispatcher\EventDispatcher()));
-        $instance->setStorage(($this->privates['asylgrp\workbench\Storage\StorageInterface'] ?? $this->getStorageInterfaceService()));
-
-        return $instance;
-    }
-
-    /**
-     * Gets the public 'asylgrp\workbench\Console\StoreCommand' shared autowired service.
-     *
-     * @return \asylgrp\workbench\Console\StoreCommand
-     */
-    protected function getStoreCommandService()
-    {
-        $this->services['asylgrp\workbench\Console\StoreCommand'] = $instance = new \asylgrp\workbench\Console\StoreCommand();
-
-        $instance->setCommandBus(($this->services['League\Tactician\CommandBus'] ?? $this->getCommandBusService()));
-        $instance->setEventDispatcher(($this->privates['Symfony\Component\EventDispatcher\EventDispatcherInterface'] ?? $this->privates['Symfony\Component\EventDispatcher\EventDispatcherInterface'] = new \Symfony\Component\EventDispatcher\EventDispatcher()));
-        $instance->setStorage(($this->privates['asylgrp\workbench\Storage\StorageInterface'] ?? $this->getStorageInterfaceService()));
-        $instance->setTableBuilder(($this->privates['asylgrp\workbench\TableBuilder'] ?? $this->privates['asylgrp\workbench\TableBuilder'] = new \asylgrp\workbench\TableBuilder()));
 
         return $instance;
     }
@@ -270,6 +269,8 @@ class ProjectServiceContainer extends Container
     protected function getDefaultParameters()
     {
         return array(
+            'app.name' => 'Workbench',
+            'app.version' => '$app_version$',
             'env(WORKBENCH_PATH)' => 'workbench',
         );
     }

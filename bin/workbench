@@ -3,20 +3,9 @@
 
 declare(strict_types = 1);
 
-namespace asylgrp\workbench\Console;
-
 require __DIR__.'/../vendor/autoload.php';
 
 use asylgrp\workbench\DependencyInjection\ProjectServiceContainer;
 use Symfony\Component\Console\Application;
 
-$container = new ProjectServiceContainer;
-
-$app = new Application('workbench', '@app_version@');
-
-$app->add($container->get(BookCommand::CLASS));
-$app->add($container->get(ImportCommand::CLASS));
-$app->add($container->get(InitCommand::CLASS));
-$app->add($container->get(StoreCommand::CLASS));
-
-return $app->run();
+return (new ProjectServiceContainer)->get(Application::CLASS)->run();

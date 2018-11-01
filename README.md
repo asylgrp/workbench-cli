@@ -18,42 +18,11 @@ environment variable `WORKBENCH_PATH`.
 
 ## TODO ##
 
-### autoblock
-
-```php
-namespace asylgrp\matchmaker\Filter;
-
-use byrokrat\accounting\Sie4\Parser\Sie4ParserFactory;
-use asylgrp\matchmaker\AccountingMatchableFactory;
-use asylgrp\matchmaker\MatchMaker;
-use asylgrp\matchmaker\Matcher\SingleMatcher;
-use byrokrat\amount\Currency\SEK;
-
-$parser = (new Sie4ParserFactory)->createParser();
-
-$accounting = $parser->parse(file_get_contents('.se'));
-
-$factory = AccountingMatchableFactory::createFactoryForYear(2017);
-
-$matchables = $factory->createMatchablesForAccount(
-    $accounting->select()->getAccount('1503'),
-    $accounting
-);
-
-$matchMaker = new MatchMaker(new SingleMatcher);
-
-$matches = $matchMaker->match(...$matchables);
-
-$blockingFilter = new LogicalOrFilter(
-    new UnaccountedPreviousYearFilter,
-    new UnaccountedDateFilter(new \DateTimeImmutable('20180303')),
-    new UnaccountedAmountFilter(new SEK('1000'))
-);
-
-$result = $blockingFilter->evaluate($matches);
-
-echo $result->getMessage() . "\n";
-```
+1. Någon form av bugg i matchmaker, loopar. Se 1506.
+1. Accounting `whereDescription` finns tydligen inte längre... till accounting_macros.php
+1. Progress bar till analyze, det kan bli fint =)
+1. Analyze kan trimmas genom att hoppa över de med saldo 0
+1. Presentation av matchis i analyze. Exempelvis kunna skapa lista på saknade kvitton till mail..
 
 ### datamodel
 Använd workbenchapp/zip-reader för att kunna läsa decision-filer från workbench.
@@ -63,11 +32,13 @@ Använd workbenchapp/zip-reader för att kunna läsa decision-filer från workbe
       som ska tas bort därför att de har varit inaktiva en viss tid...
 
 ### contacts
-> workbench contacts
-> workbench contacts --no-account
-> workbench contacts --banned
-> workbench contacts --inactive
-> workbench contacts --active
+```
+workbench contacts
+workbench contacts --no-account
+workbench contacts --banned
+workbench contacts --inactive
+workbench contacts --active
+```
 
 1. Liknar `book` men listar kontaktpersoner istället
 1. --no-account listar kp:s från contacts.json som inte finns i bokföringen som konto..
@@ -76,13 +47,3 @@ Använd workbenchapp/zip-reader för att kunna läsa decision-filer från workbe
 1. --inactive listar personer som ej beviljats en utbetalning på 6 månader (eller annan tid...)
 1. --active listar tvärt om personer som HAR beviljats utbetalning senaste 6 mån (eller annan tid..)
 1. Dessa sista två kräver att även beslut kan importeras och sparas lokalt...
-
-### analyze
-> workbench analyze
-> workbench analyze 1503
-> workbench analyze 1503 --duplicates
-
-1. undersök om en eller flera kp ska spärras (eller alla om inget finns angivet)
-1. ska kunna ställa in hur mycket ett datum får variera för att betraktas som match (i dagar)
-1. samt hur mycket en summa får variera för att betraktas som en match (i procent)
-1. ska presentera både omatchade kvitton och omatchade utbetalningar

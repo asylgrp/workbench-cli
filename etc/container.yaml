@@ -1,4 +1,6 @@
 parameters:
+    app.name: 'Workbench'
+    app.version: '$app_version$'
     env(WORKBENCH_PATH): 'workbench'
     storage.path: '%env(WORKBENCH_PATH)%/storage'
 
@@ -7,26 +9,27 @@ services:
         public: false
         autowire: true
 
-    asylgrp\workbench\AccountRenderer\:
-        resource: '../src/AccountRenderer/*'
+    asylgrp\workbench\:
+        resource: '../src/*'
+        exclude: '../src/accounting_macros.php'
 
-    asylgrp\workbench\AccountRenderer\AccountRendererContainer:
+    Symfony\Component\Console\Application:
         class: ~
-        arguments:
-            -
-                ledger: '@asylgrp\workbench\AccountRenderer\LedgerRenderer'
-                list: '@asylgrp\workbench\AccountRenderer\ListRenderer'
-                mail: '@asylgrp\workbench\AccountRenderer\MailRenderer'
-
-    asylgrp\workbench\Console\:
-        resource: '../src/Console/*'
+        arguments: ['%app.name%', '%app.version%']
         public: true
-
-    asylgrp\workbench\CommandBus\:
-        resource: '../src/CommandBus/*'
+        calls:
+            - method: add
+              arguments: ['@asylgrp\workbench\Console\AnalyzeCommand']
+            - method: add
+              arguments: ['@asylgrp\workbench\Console\BookCommand']
+            - method: add
+              arguments: ['@asylgrp\workbench\Console\ImportCommand']
+            - method: add
+              arguments: ['@asylgrp\workbench\Console\InitCommand']
+            - method: add
+              arguments: ['@asylgrp\workbench\Console\StoreCommand']
 
     League\Tactician\CommandBus:
-        public: true
         class: ~
         factory: 'League\Tactician\Setup\QuickStart:create'
         arguments:
@@ -38,6 +41,17 @@ services:
     League\Tactician\Setup\QuickStart:
         class: ~
 
+    Symfony\Component\EventDispatcher\EventDispatcherInterface:
+        class: 'Symfony\Component\EventDispatcher\EventDispatcher'
+
+    asylgrp\workbench\AccountRenderer\AccountRendererContainer:
+        class: ~
+        arguments:
+            -
+                ledger: '@asylgrp\workbench\AccountRenderer\LedgerRenderer'
+                list: '@asylgrp\workbench\AccountRenderer\ListRenderer'
+                mail: '@asylgrp\workbench\AccountRenderer\MailRenderer'
+
     byrokrat\accounting\Processor\ProcessorInterface:
         class: byrokrat\accounting\Processor\TransactionProcessor
 
@@ -47,9 +61,6 @@ services:
 
     byrokrat\accounting\Sie4\Parser\Sie4ParserFactory:
         class: ~
-
-    Symfony\Component\EventDispatcher\EventDispatcherInterface:
-        class: 'Symfony\Component\EventDispatcher\EventDispatcher'
 
     asylgrp\workbench\Storage\StorageInterface:
         class: 'asylgrp\workbench\Storage\FlysystemStorage'
@@ -63,5 +74,15 @@ services:
         class: League\Flysystem\Adapter\Local
         arguments: ['%storage.path%']
 
-    asylgrp\workbench\TableBuilder:
+    asylgrp\matchmaker\MatchMaker:
         class: ~
+        factory: 'asylgrp\workbench\Setup\MatchMakerFactory:createMatchMaker'
+
+    asylgrp\matchmaker\Filter\FilterInterface:
+        class: ~
+        factory: 'asylgrp\workbench\Setup\BanFilterFactory:createBanFilter'
+        arguments: ['@now']
+
+    now:
+        class: DateTimeImmutable
+        factory: 'asylgrp\workbench\Utils\SystemClock:now'
